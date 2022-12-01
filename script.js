@@ -1,9 +1,6 @@
 let okStopPlaying;
 
-let playCells = new Array(9);
-for (let i = 1; i <= 9; ++i){
-    playCells[i] = new Array(9);
-}
+let playCells = Array(11).fill(0).map(() => Array(11).fill(0));
 
 function startGame() {
     let bombCounter = 0;
@@ -25,25 +22,23 @@ function startGame() {
                 onclick: () => clickAction(i * 10 + j),
             })
             playingCells.addEventListener("contextmenu", e => {
-                let aux = e.target.id;
-                let X =  Math.floor(aux / 10);
-                let Y =  aux % 10;
-                if (Number.isInteger(playCells[X][Y]) && playCells[X][Y] != 10 && okStopPlaying == 0) {
-                    playCells[X][Y] += 0.1;
-                    document.getElementById(aux).src = 'flagged_unused_cell.png';
-                } else if (playCells[X][Y] != 10){
-                    playCells[X][Y] -= 0.1;
-                    document.getElementById(aux).src = 'unused_cell.png';
+                let value = new getID(e.target.id);
+                if (Number.isInteger(playCells[value.row][value.column]) && playCells[value.row][value.column] != 10 && okStopPlaying == 0) {
+                    playCells[value.row][value.column] += 0.1;
+                    document.getElementById(e.target.id).src = 'flagged_unused_cell.png';
+                } else if (playCells[value.row][value.column] != 10){
+                    playCells[value.row][value.column] -= 0.1;
+                    document.getElementById(e.target.id).src = 'unused_cell.png';
                 }
             })
             document.getElementById(i).appendChild(playingCells);
         }
     }
     while (bombCounter < 8) {
-        let X = Math.floor(Math.random() * 9) + 1;
-        let Y = Math.floor(Math.random() * 9) + 1;
-        if (playCells[X][Y] == 0) {
-            playCells[X][Y] -= 1;
+        let row = Math.floor(Math.random() * 9) + 1;
+        let column = Math.floor(Math.random() * 9) + 1;
+        if (playCells[row][column] == 0) {
+            playCells[row][column] -= 1;
             ++bombCounter;
         }
     }
@@ -96,63 +91,36 @@ function startGame() {
 }
 
 function clickAction(id) {
-    let X =  Math.floor(id / 10);
-    let Y =  id % 10;
+    let row =  Math.floor(id / 10);
+    let column =  id % 10;
     
-    if(playCells[X][Y] == -1 && okStopPlaying == 0) {
+    if(playCells[row][column] == -1 && okStopPlaying == 0) {
         okStopPlaying = 1;
         document.getElementById(id).src = 'bomb_cell.png';
         document.getElementById("YouLostMessage").innerHTML = "You Lost";
     }
-    if(playCells[X][Y] == 1 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_1.png';
-    }
-    if(playCells[X][Y] == 2 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_2.png';
-    }
-    if(playCells[X][Y] == 3 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_3.png';
-    }
-    if(playCells[X][Y] == 4 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_4.png';
-    }
-    if(playCells[X][Y] == 5 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_5.png';
-    }
-    if(playCells[X][Y] == 6 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_6.png';
-    }
-    if(playCells[X][Y] == 7 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_7.png';
-    }
-    if(playCells[X][Y] == 8 && okStopPlaying == 0) {
-        playCells[X][Y] = 10;
-        document.getElementById(id).src = 'used_cell_8.png';
+    for (let i = 1; i <= 8; ++i) {
+        if(playCells[row][column] == i && okStopPlaying == 0) {
+            playCells[row][column] = 10;
+            document.getElementById(id).src = 'used_cell_' + i + '.png'; 
+        }
     }
 
-    
-    if(playCells[X][Y] == 0 && okStopPlaying == 0) {
+    if(playCells[row][column] == 0 && okStopPlaying == 0) {
         document.getElementById(id).src = 'used_cell.png';
-        let rightY = Y;
-        let leftY = Y;
+        let rightY = column;
+        let leftY = column;
 
-        while (rightY <= 9 && playCells[X][rightY] == 0) {
-            document.getElementById(X * 10 + rightY).src = 'used_cell.png';
+        while (rightY <= 9 && playCells[row][rightY] == 0) {
+            document.getElementById(row * 10 + rightY).src = 'used_cell.png';
             try {
-                if (playCells[X][rightY + 1] != 0) {
-                    imageChange(X,rightY + 1);
+                if (playCells[row][rightY + 1] != 0) {
+                    imageChange(row,rightY + 1);
                 }
             }catch(e){}
 
-            let upX = X;
-            let downX = X;
+            let upX = row;
+            let downX = row;
             while (upX >= 1 && playCells[upX][rightY] == 0){
                 document.getElementById(upX * 10 + rightY).src = 'used_cell.png';
                 try {
@@ -212,21 +180,20 @@ function clickAction(id) {
                     }catch(e) {}
                     --downLeftY;
                 }
-
                 ++downX;
             }
             ++rightY;
         } 
 
-        while (leftY >= 1 && playCells[X][leftY] == 0) {
-            document.getElementById(X * 10 + leftY).src = 'used_cell.png'
+        while (leftY >= 1 && playCells[row][leftY] == 0) {
+            document.getElementById(row * 10 + leftY).src = 'used_cell.png'
             try{
-                if (playCells[X][leftY - 1] != 0) {
-                    imageChange(X,leftY - 1);
+                if (playCells[row][leftY - 1] != 0) {
+                    imageChange(row,leftY - 1);
                 }
             }catch(e) {}
-            let upX = X;
-            let downX = X;
+            let upX = row;
+            let downX = row;
             while (upX >= 1 && playCells[upX][leftY] == 0){
                 document.getElementById(upX * 10 + leftY).src = 'used_cell.png';
                 try {
@@ -250,30 +217,17 @@ function clickAction(id) {
     }
 }
 
-
 function imageChange(x, y) {
-    if (playCells[x][y] == 1) {
-        document.getElementById(x * 10 + y).src = 'used_cell_1.png';
+    for (let i = 1; i <= 8 ; ++i) {
+        if (playCells[x][y] == i) {
+            document.getElementById(x * 10 + y).src = 'used_cell_' + i + '.png';
+        }
     }
-    if (playCells[x][y] == 2) {
-        document.getElementById(x * 10 + y).src = 'used_cell_2.png';
-    }
-    if (playCells[x][y] == 3) {
-        document.getElementById(x * 10 + y).src = 'used_cell_3.png';
-    }
-    if (playCells[x][y] == 4) {
-        document.getElementById(x * 10 + y).src = 'used_cell_4.png';
-    }
-    if (playCells[x][y] == 5) {
-        document.getElementById(x * 10 + y).src = 'used_cell_5.png';
-    }
-    if (playCells[x][y] == 6) {
-        document.getElementById(x * 10 + y).src = 'used_cell_6.png';
-    }
-    if (playCells[x][y] == 7) {
-        document.getElementById(x * 10 + y).src = 'used_cell_7.png';
-    }
-    if (playCells[x][y] == 8) {
-        document.getElementById(x * 10 + y).src = 'used_cell_8.png';
+}
+
+class getID {
+    constructor(id) {
+        this.row = Math.floor(id / 10);
+        this.column = id % 10;
     }
 }
